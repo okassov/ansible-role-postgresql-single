@@ -4,8 +4,6 @@
   become: true
 
   vars:
-    postgresql_use_pgdg_repo: true
-
     postgresql_databases:
       - name: example
         extensions:

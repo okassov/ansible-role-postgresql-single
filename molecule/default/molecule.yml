@@ -28,6 +28,7 @@ provisioner:
   inventory:
     host_vars:
       ubuntu2404:
+        postgresql_use_pgdg_repo: true
         postgresql_extensions_packages:
           - postgresql-17-postgis-3
       debian12:
