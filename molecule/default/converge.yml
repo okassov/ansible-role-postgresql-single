@@ -23,6 +23,7 @@
         password: "testpassword123"
       - name: longjohnsilver
         password: "testpassword456"
+
     postgresql_privs:
       - db: example
         roles: jdoe
