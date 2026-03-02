@@ -3,6 +3,10 @@
 # `restarted` or `reloaded`
 postgresql_restarted_state: "reloaded"
 
+# Set to true to add the official PGDG APT repository.
+# Required for versions not available in standard distro repos (e.g. PG17 on Ubuntu 24).
+postgresql_use_pgdg_repo: false
+
 postgresql_python_library: python3-psycopg2
 postgresql_user: postgres
 postgresql_group: postgres
