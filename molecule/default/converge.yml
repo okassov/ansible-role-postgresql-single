@@ -5,10 +5,6 @@
 
   vars:
     postgresql_use_pgdg_repo: true
-    postgresql_version: "17"
-
-    postgresql_extensions_packages:
-      - postgresql-17-postgis-3
 
     postgresql_databases:
       - name: example
