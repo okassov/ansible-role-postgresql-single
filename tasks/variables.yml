@@ -1,0 +1,52 @@
+---
+- name: Include OS-specific variables.
+  ansible.builtin.include_vars: "{{ ansible_facts.distribution }}-{{ ansible_facts.distribution_version.split('.')[0] }}.yml"
+
+- name: Define postgresql_packages.
+  ansible.builtin.set_fact:
+    postgresql_packages: "{{ __postgresql_packages | list }}"
+  when: postgresql_packages is not defined
+
+- name: Define postgresql_version.
+  ansible.builtin.set_fact:
+    postgresql_version: "{{ __postgresql_version }}"
+  when: postgresql_version is not defined
+
+- name: Define postgresql_daemon.
+  ansible.builtin.set_fact:
+    postgresql_daemon: "postgresql@{{ postgresql_version }}-main"
+  when: postgresql_daemon is not defined
+
+- name: Define postgresql_data_dir.
+  ansible.builtin.set_fact:
+    postgresql_data_dir: "/var/lib/postgresql/{{ postgresql_version }}/main"
+  when: postgresql_data_dir is not defined
+
+- name: Define postgresql_bin_path.
+  ansible.builtin.set_fact:
+    postgresql_bin_path: "/usr/lib/postgresql/{{ postgresql_version }}/bin"
+  when: postgresql_bin_path is not defined
+
+- name: Define postgresql_config_path.
+  ansible.builtin.set_fact:
+    postgresql_config_path: "/etc/postgresql/{{ postgresql_version }}/main"
+  when: postgresql_config_path is not defined
+
+- name: Define postgresql_unix_socket_directories_mode.
+  ansible.builtin.set_fact:
+    postgresql_unix_socket_directories_mode: "02775"
+  when: postgresql_unix_socket_directories_mode is not defined
+
+- name: Define postgresql_log_dir.
+  ansible.builtin.set_fact:
+    postgresql_log_dir: "{{ (postgresql_global_config_options | items2dict(key_name='option', value_name='value')).log_directory }}"
+
+- name: Define postgresql_effective_log_dir, if postgresql_log_dir is absolute.
+  ansible.builtin.set_fact:
+    postgresql_effective_log_dir: '{{ postgresql_log_dir }}'
+  when: postgresql_log_dir is match("/")
+
+- name: Define postgresql_effective_log_dir, if postgresql_log_dir is relative.
+  ansible.builtin.set_fact:
+    postgresql_effective_log_dir: '{{ postgresql_data_dir }}/{{ postgresql_log_dir }}'
+  when: postgresql_log_dir is not match("/")

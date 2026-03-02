@@ -1,0 +1,25 @@
+---
+- name: Check supported OS family.
+  ansible.builtin.fail:
+    msg: "This role only supports Debian/Ubuntu. Detected: {{ ansible_facts.os_family }}"
+  when: ansible_facts.os_family != 'Debian'
+
+# Variable configuration.
+- ansible.builtin.include_tasks: variables.yml
+
+# Setup/install tasks.
+- ansible.builtin.include_tasks: setup-Debian.yml
+
+- ansible.builtin.include_tasks: initialize.yml
+- ansible.builtin.include_tasks: configure.yml
+
+- name: Ensure PostgreSQL is started and enabled on boot.
+  ansible.builtin.service:
+    name: "{{ postgresql_daemon }}"
+    state: "{{ postgresql_service_state }}"
+    enabled: "{{ postgresql_service_enabled }}"
+
+# Configure PostgreSQL.
+- ansible.builtin.import_tasks: users.yml
+- ansible.builtin.import_tasks: databases.yml
+- ansible.builtin.import_tasks: users_props.yml

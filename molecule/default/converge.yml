@@ -1,0 +1,25 @@
+---
+- name: Converge
+  hosts: all
+  become: true
+
+  vars:
+    postgresql_databases:
+      - name: example
+    postgresql_users:
+      - name: jdoe
+        password: "testpassword123"
+      - name: longjohnsilver
+        password: "testpassword456"
+    postgresql_privs:
+      - db: example
+        roles: jdoe
+        type: database
+        privs: ALL
+      - db: example
+        roles: longjohnsilver
+        objs: ALL_IN_SCHEMA
+        privs: ALL
+
+  roles:
+    - role: okassov.postgresql

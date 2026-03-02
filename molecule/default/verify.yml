@@ -1,0 +1,97 @@
+---
+- name: Verify
+  hosts: all
+  become: true
+
+  tasks:
+    - name: Get PostgreSQL version.
+      ansible.builtin.command: psql --version
+      changed_when: false
+      register: psql_version
+
+    - name: Set PostgreSQL version fact.
+      ansible.builtin.set_fact:
+        pg_version: "{{ psql_version.stdout | regex_search('\\d+') }}"
+
+    - name: Verify PostgreSQL version is 15+.
+      ansible.builtin.assert:
+        that:
+          - pg_version | int >= 15
+        fail_msg: "PostgreSQL version must be >= 15, got: {{ pg_version }}"
+
+    - name: Check PostgreSQL service is running.
+      ansible.builtin.command: pg_isready
+      changed_when: false
+      register: pg_isready_result
+
+    - name: Verify PostgreSQL is accepting connections.
+      ansible.builtin.assert:
+        that:
+          - pg_isready_result.rc == 0
+        fail_msg: "PostgreSQL is not accepting connections"
+
+    - name: Check if database 'example' exists.
+      ansible.builtin.command: psql -tAc "SELECT 1 FROM pg_database WHERE datname='example'"
+      changed_when: false
+      become_user: postgres
+      register: db_check
+
+    - name: Verify database 'example' exists.
+      ansible.builtin.assert:
+        that:
+          - "'1' in db_check.stdout"
+        fail_msg: "Database 'example' was not created"
+
+    - name: Check if user 'jdoe' exists.
+      ansible.builtin.command: psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='jdoe'"
+      changed_when: false
+      become_user: postgres
+      register: user_jdoe_check
+
+    - name: Verify user 'jdoe' exists.
+      ansible.builtin.assert:
+        that:
+          - "'1' in user_jdoe_check.stdout"
+        fail_msg: "User 'jdoe' was not created"
+
+    - name: Check if user 'longjohnsilver' exists.
+      ansible.builtin.command: psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='longjohnsilver'"
+      changed_when: false
+      become_user: postgres
+      register: user_ljs_check
+
+    - name: Verify user 'longjohnsilver' exists.
+      ansible.builtin.assert:
+        that:
+          - "'1' in user_ljs_check.stdout"
+        fail_msg: "User 'longjohnsilver' was not created"
+
+    - name: Check pg_hba.conf exists and has correct permissions.
+      ansible.builtin.stat:
+        path: "/etc/postgresql/{{ pg_version }}/main/pg_hba.conf"
+      register: pg_hba_stat
+
+    - name: Verify pg_hba.conf permissions.
+      ansible.builtin.assert:
+        that:
+          - pg_hba_stat.stat.exists
+          - pg_hba_stat.stat.mode == '0600'
+          - pg_hba_stat.stat.pw_name == 'postgres'
+        fail_msg: "pg_hba.conf has incorrect permissions or does not exist"
+
+    - name: Check user 'jdoe' can connect to database 'example'.
+      ansible.builtin.command: psql -h 127.0.0.1 -U jdoe -d example -tAc "SELECT 1"
+      changed_when: false
+      environment:
+        PGPASSWORD: "testpassword123"
+      register: jdoe_connect
+
+    - name: Verify user 'jdoe' connection.
+      ansible.builtin.assert:
+        that:
+          - "'1' in jdoe_connect.stdout"
+        fail_msg: "User 'jdoe' cannot connect to database 'example'"
+
+    - name: All checks passed.
+      ansible.builtin.debug:
+        msg: "All PostgreSQL verification checks passed."
