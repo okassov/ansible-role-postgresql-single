@@ -22,4 +22,3 @@
   become_user: "{{ postgresql_user }}"
   vars:
     ansible_ssh_pipelining: true
-  when: (_db_extensions + postgresql_extensions) | length > 0
