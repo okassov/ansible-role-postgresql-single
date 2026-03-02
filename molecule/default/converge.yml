@@ -4,8 +4,20 @@
   become: true
 
   vars:
+    postgresql_use_pgdg_repo: true
+
+    postgresql_extensions_packages:
+      - postgresql-17-postgis-3
+
     postgresql_databases:
       - name: example
+        extensions:
+          - postgis
+
+    postgresql_extensions:
+      - name: pg_trgm
+        db: example
+
     postgresql_users:
       - name: jdoe
         password: "testpassword123"
