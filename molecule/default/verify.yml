@@ -92,6 +92,34 @@
           - "'1' in jdoe_connect.stdout"
         fail_msg: "User 'jdoe' cannot connect to database 'example'"
 
+    - name: Check postgis extension exists in 'example' database.
+      ansible.builtin.command: >
+        psql -d example -tAc "SELECT 1 FROM pg_extension WHERE extname='postgis'"
+      changed_when: false
+      become_user: postgres
+      register: postgis_check
+
+    - name: Verify postgis extension is enabled.
+      ansible.builtin.assert:
+        that:
+          - postgis_check.rc == 0
+          - "'1' in postgis_check.stdout"
+        fail_msg: "Extension 'postgis' is not enabled in database 'example'"
+
+    - name: Check pg_trgm extension exists in 'example' database.
+      ansible.builtin.command: >
+        psql -d example -tAc "SELECT 1 FROM pg_extension WHERE extname='pg_trgm'"
+      changed_when: false
+      become_user: postgres
+      register: pg_trgm_check
+
+    - name: Verify pg_trgm extension is enabled.
+      ansible.builtin.assert:
+        that:
+          - pg_trgm_check.rc == 0
+          - "'1' in pg_trgm_check.stdout"
+        fail_msg: "Extension 'pg_trgm' is not enabled in database 'example'"
+
     - name: All checks passed.
       ansible.builtin.debug:
         msg: "All PostgreSQL verification checks passed."

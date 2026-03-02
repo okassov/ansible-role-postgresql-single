@@ -6,11 +6,19 @@
   vars:
     postgresql_databases:
       - name: example
+        extensions:
+          - postgis
+
+    postgresql_extensions:
+      - name: pg_trgm
+        db: example
+
     postgresql_users:
       - name: jdoe
         password: "testpassword123"
       - name: longjohnsilver
         password: "testpassword456"
+
     postgresql_privs:
       - db: example
         roles: jdoe

@@ -117,6 +117,24 @@ Each entry supports the following fields:
 
 When overriding, make sure to include all default entries from `defaults/main.yml` if you need to preserve them.
 
+### Extensions
+
+```yaml
+# Apt packages required by extensions (installed before extension activation)
+postgresql_extensions_packages: []
+# - postgresql-16-postgis-3
+# - postgresql-16-pgvector
+
+# Extensions to activate globally across one or more databases
+postgresql_extensions: []
+# - name: pg_trgm      # required — extension name
+#   db: mydb           # required — target database
+#   schema: public     # optional — schema to install into
+#   state: present     # optional — present (default) or absent
+#   login_user: ...    # optional
+#   login_unix_socket: ... # optional
+```
+
 ---
 
 ## Managing Databases
@@ -398,6 +416,78 @@ postgresql_privs:
     objs: public
     privs: USAGE
 ```
+
+---
+
+## Managing Extensions
+
+### Installing Extension Packages
+
+Some extensions require additional apt packages (e.g. PostGIS, pgvector). List them in `postgresql_extensions_packages`:
+
+```yaml
+postgresql_extensions_packages:
+  - postgresql-16-postgis-3
+  - postgresql-16-pgvector
+```
+
+These packages are installed before any extension activation.
+
+### Activating Extensions Globally
+
+Use `postgresql_extensions` to activate extensions across one or more databases:
+
+```yaml
+postgresql_extensions:
+  - name: pg_trgm
+    db: myapp_db
+  - name: postgis
+    db: myapp_db
+    schema: public
+  - name: pgcrypto
+    db: myapp_db
+    state: present
+```
+
+Full parameter reference:
+
+| Parameter | Default | Description |
+|-----------|:-------:|-------------|
+| `name` | (required) | Extension name (as known to PostgreSQL) |
+| `db` | (required) | Target database |
+| `schema` | — | Schema to install the extension into |
+| `state` | `present` | `present` or `absent` |
+| `login_user` | `postgres` | User to connect as |
+| `login_unix_socket` | auto | Path to unix socket |
+
+### Activating Extensions Per Database (shorthand)
+
+For convenience, you can specify extensions directly on a database entry using the `extensions` key. Each item is a plain extension name string:
+
+```yaml
+postgresql_databases:
+  - name: myapp_db
+    owner: app_user
+    extensions:
+      - pg_trgm
+      - pgcrypto
+      - postgis
+```
+
+This is equivalent to listing the same extensions in `postgresql_extensions` with `db: myapp_db`. Both lists are merged at runtime, so you can mix and match the two styles.
+
+### Removing Extensions
+
+Set `state: absent` to drop an extension from a database:
+
+```yaml
+postgresql_extensions:
+  - name: pg_trgm
+    db: myapp_db
+    state: absent
+```
+
+---
 
 ## OS-Specific Variables
 

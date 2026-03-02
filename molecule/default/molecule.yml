@@ -25,6 +25,15 @@ platforms:
     pre_build_image: true
 provisioner:
   name: ansible
+  inventory:
+    host_vars:
+      ubuntu2404:
+        postgresql_use_pgdg_repo: true
+        postgresql_extensions_packages:
+          - postgresql-17-postgis-3
+      debian12:
+        postgresql_extensions_packages:
+          - postgresql-15-postgis-3
   playbooks:
     prepare: prepare.yml
     converge: converge.yml

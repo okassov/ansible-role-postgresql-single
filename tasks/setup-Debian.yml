@@ -40,6 +40,12 @@
     name: "{{ postgresql_packages }}"
     state: present
 
+- name: Ensure PostgreSQL extension packages are installed.
+  ansible.builtin.apt:
+    name: "{{ postgresql_extensions_packages }}"
+    state: present
+  when: postgresql_extensions_packages | length > 0
+
 - name: Ensure all configured locales are present.
   community.general.locale_gen:
     name: "{{ item }}"

@@ -102,3 +102,15 @@ postgresql_privs: []
 
 # Whether to output user data when managing users.
 postgres_users_no_log: true
+
+# List of apt packages for PostgreSQL extensions (e.g. postgresql-17-postgis-3)
+postgresql_extensions_packages: []
+
+# Extensions to activate in databases (global list)
+postgresql_extensions: []
+# - name: pg_trgm      # required — extension name
+#   db: mydb           # required — target database
+#   schema: public     # optional
+#   state: present     # optional, default: present
+#   login_user: ...    # optional
+#   login_unix_socket: ... # optional
