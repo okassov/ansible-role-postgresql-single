@@ -1,0 +1,25 @@
+---
+- name: Reset _db_extensions list.
+  ansible.builtin.set_fact:
+    _db_extensions: []
+
+- name: Collect extensions from postgresql_databases shorthand.
+  ansible.builtin.set_fact:
+    _db_extensions: "{{ _db_extensions + (item.extensions | default([]) | map('community.general.dict_kv', 'name') | map('combine', {'db': item.name}) | list) }}"
+  loop: "{{ postgresql_databases }}"
+  when: item.extensions is defined
+
+- name: Ensure PostgreSQL extensions are enabled.
+  community.postgresql.postgresql_ext:
+    name: "{{ item.name }}"
+    db: "{{ item.db }}"
+    schema: "{{ item.schema | default(omit) }}"
+    state: "{{ item.state | default('present') }}"
+    login_user: "{{ item.login_user | default(postgresql_user) }}"
+    login_unix_socket: "{{ item.login_unix_socket | default(postgresql_unix_socket_directories[0]) }}"
+  loop: "{{ _db_extensions + postgresql_extensions }}"
+  become: true
+  become_user: "{{ postgresql_user }}"
+  vars:
+    ansible_ssh_pipelining: true
+  when: (_db_extensions + postgresql_extensions) | length > 0
