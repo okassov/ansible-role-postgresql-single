@@ -22,7 +22,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install ansible molecule molecule-docker docker
+          pip install "ansible<12" molecule molecule-docker docker
 
       - name: Install required Ansible collections
         run: |

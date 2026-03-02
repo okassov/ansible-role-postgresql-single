@@ -1,4 +1,35 @@
 ---
+- name: Ensure ca-certificates and gnupg are installed (PGDG).
+  ansible.builtin.apt:
+    name:
+      - ca-certificates
+      - gnupg
+    state: present
+  when: postgresql_use_pgdg_repo
+
+- name: Ensure /etc/apt/keyrings directory exists (PGDG).
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: "0755"
+  when: postgresql_use_pgdg_repo
+
+- name: Download PostgreSQL PGDG GPG key.
+  ansible.builtin.get_url:
+    url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+    dest: /etc/apt/keyrings/postgresql.asc
+    mode: "0644"
+    force: false
+  when: postgresql_use_pgdg_repo
+
+- name: Add PostgreSQL PGDG APT repository.
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/etc/apt/keyrings/postgresql.asc] https://apt.postgresql.org/pub/repos/apt {{ ansible_facts.distribution_release }}-pgdg main"
+    state: present
+    filename: pgdg
+    update_cache: true
+  when: postgresql_use_pgdg_repo
+
 - name: Ensure PostgreSQL Python libraries are installed.
   ansible.builtin.apt:
     name: "{{ postgresql_python_library }}"
